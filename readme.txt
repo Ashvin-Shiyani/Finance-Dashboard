@@ -12,3 +12,8 @@ and learn the difference between Tkinter and customTkinter
 I made a screen and gave its structure, which tells the user what will the app does.
 I made a button which allows the user to uplaod the file, even  if uploades does nothing.
 
+Created the logic behind the uplaod button, loading the csv file to the database which further feeds the info to main.py
+Main.py fetching the information from the db_file created makes my first chart.
+Main idea is to create mutliple charts, while filetring the data into different categories of data and then making smart decision on which 
+chart would be best suited for which info 
+
