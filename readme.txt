@@ -17,3 +17,6 @@ Main.py fetching the information from the db_file created makes my first chart.
 Main idea is to create mutliple charts, while filetring the data into different categories of data and then making smart decision on which 
 chart would be best suited for which info 
 
+Wrote logic to detect column types automatically. Dates are detected by trying to convert them, numbers 
+by using pandas built in checker, yes/no columns by checking unique values, and categories by counting unique values using nunique() — if less than 20 it 
+is categorical. Based on the type, the app picks the best chart automatically.
