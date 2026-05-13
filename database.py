@@ -12,6 +12,14 @@ def init_db():
 def load_csv_to_db(filepath):
     df = pd.read_csv(filepath)
     df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+    for col in df.columns:
+        if df[col].dtype == object:
+            cleaned = df[col].str.replace(
+                "$", "", regex=False).str.replace(",", "", regex=False)
+        try:
+            df[col] = pd.to_numeric(cleaned)
+        except:
+            pass
     conn = sql.connect(db_name)
     df.to_sql("data", conn, if_exists="replace", index=False)
     conn.close()
