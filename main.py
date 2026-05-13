@@ -115,7 +115,6 @@ def show_dashboard(df):
 
     col_types = db.detect_columns(df)
 
-    # ── ROW 1: First two categorical columns as pie charts ──
     if col_types["categorical"]:
         row1 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
         row1.pack(fill="x", pady=10, padx=20)
@@ -135,15 +134,17 @@ def show_dashboard(df):
             charts.draw_pie_chart(card2, cat2_data, cat2, "count",
                                   f"{cat2.replace('_',' ').title()} Breakdown")
 
-    # ── ROW 2: Line chart if date + numeric exist ──
     if col_types["date"] and col_types["numeric"]:
-        line_card = ctk.CTkFrame(
-            dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
-        line_card.pack(fill="x", pady=10, padx=20)
-        cashflow_data = db.get_monthly_cashflow()
-        charts.draw_line_chart(line_card, cashflow_data, "Cash Flow by Month")
+        try:
+            line_card = ctk.CTkFrame(
+                dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
+            line_card.pack(fill="x", pady=10, padx=20)
+            cashflow_data = db.get_monthly_cashflow()
+            charts.draw_line_chart(
+                line_card, cashflow_data, "Cash Flow by Month")
+        except:
+            pass
 
-    # ── ROW 3: Histogram + bar chart if numeric exists ──
     if col_types["numeric"]:
         row3 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
         row3.pack(fill="x", pady=10, padx=20)
@@ -164,7 +165,6 @@ def show_dashboard(df):
             charts.draw_bar_chart(bar_card, bar_data, cat_col, "total",
                                   f"Top {cat_col.replace('_',' ').title()} by {num_col.replace('_',' ').title()}")
 
-    # ── ROW 4: Donut charts for boolean columns ──
     if col_types["boolean"]:
         row4 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
         row4.pack(fill="x", pady=10, padx=20)
@@ -176,7 +176,6 @@ def show_dashboard(df):
             charts.draw_donut_chart(donut_card, df_full, bool_col,
                                     f"{bool_col.replace('_',' ').title()} Split")
 
-    # ── ROW 5: Stats table ──
     if col_types["numeric"]:
         table_card = ctk.CTkFrame(
             dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
