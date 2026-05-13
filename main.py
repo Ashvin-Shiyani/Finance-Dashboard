@@ -53,7 +53,7 @@ def upload_csv():
     rows_label.configure(text=f"{rows:,} rows loaded")
     cols_label.configure(text=f"{len(df.columns)} columns detected")
 
-    show_dashboard()
+    show_dashboard(df)
 
 
 ctk.CTkButton(
@@ -106,54 +106,85 @@ for example in ["Credit card data", "Financial transactions",
 dashboard_frame = ctk.CTkFrame(scrollable, fg_color="transparent")
 
 
-def show_dashboard():
+def show_dashboard(df):
     welcome_frame.pack_forget()
-
     dashboard_frame.pack(fill="both", expand=True)
 
     for widget in dashboard_frame.winfo_children():
         widget.destroy()
 
-    row1 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
-    row1.pack(fill="x", pady=10, padx=20)
+    col_types = db.detect_columns(df)
 
-    card = ctk.CTkFrame(row1, fg_color="#1a1a2e", corner_radius=15)
-    card.pack(side="left", fill="both", expand=True, padx=(0, 8))
-    dept_data = db.get_department_counts()
-    charts.draw_pie_chart(card, dept_data, "department",
-                          "count", "Transactions by Department")
+    # ── ROW 1: First two categorical columns as pie charts ──
+    if col_types["categorical"]:
+        row1 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
+        row1.pack(fill="x", pady=10, padx=20)
 
-    bar_card = ctk.CTkFrame(row1, fg_color="#1a1a2e", corner_radius=15)
-    bar_card.pack(side="left", fill="both", expand=True, padx=(8, 0))
-    bar_data = db.get_top_categories("department", "amount")
-    charts.draw_bar_chart(bar_card, bar_data, "department",
-                          "total", "Top Departments by Amount")
+        cat1 = col_types["categorical"][0]
+        card1 = ctk.CTkFrame(row1, fg_color="#1a1a2e", corner_radius=15)
+        card1.pack(side="left", fill="both", expand=True, padx=(0, 8))
+        cat1_data = db.get_category_counts(cat1)
+        charts.draw_pie_chart(card1, cat1_data, cat1, "count",
+                              f"{cat1.replace('_',' ').title()} Breakdown")
 
-    line_card = ctk.CTkFrame(
-        dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
-    line_card.pack(fill="x", pady=10, padx=20)
-    cashflow_data = db.get_monthly_cashflow()
-    charts.draw_line_chart(line_card, cashflow_data, "Cash Flow by Month")
+        if len(col_types["categorical"]) > 1:
+            cat2 = col_types["categorical"][1]
+            card2 = ctk.CTkFrame(row1, fg_color="#1a1a2e", corner_radius=15)
+            card2.pack(side="left", fill="both", expand=True, padx=(8, 0))
+            cat2_data = db.get_category_counts(cat2)
+            charts.draw_pie_chart(card2, cat2_data, cat2, "count",
+                                  f"{cat2.replace('_',' ').title()} Breakdown")
 
-    row3 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
-    row3.pack(fill="x", pady=10, padx=20)
+    # ── ROW 2: Line chart if date + numeric exist ──
+    if col_types["date"] and col_types["numeric"]:
+        line_card = ctk.CTkFrame(
+            dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
+        line_card.pack(fill="x", pady=10, padx=20)
+        cashflow_data = db.get_monthly_cashflow()
+        charts.draw_line_chart(line_card, cashflow_data, "Cash Flow by Month")
 
-    hist_card = ctk.CTkFrame(row3, fg_color="#1a1a2e", corner_radius=15)
-    hist_card.pack(side="left", fill="both", expand=True, padx=(0, 8))
-    amount_data = db.get_numeric_distribution("amount")
-    charts.draw_histogram(hist_card, amount_data,
-                          "amount", "Amount Distribution")
+    # ── ROW 3: Histogram + bar chart if numeric exists ──
+    if col_types["numeric"]:
+        row3 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
+        row3.pack(fill="x", pady=10, padx=20)
 
-    donut_card = ctk.CTkFrame(row3, fg_color="#1a1a2e", corner_radius=15)
-    donut_card.pack(side="left", fill="both", expand=True, padx=(8, 0))
-    df = db.get_dataframe()
-    charts.draw_donut_chart(donut_card, df, "status", "Transaction Status")
+        num_col = col_types["numeric"][0]
 
-    table_card = ctk.CTkFrame(
-        dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
-    table_card.pack(fill="x", pady=10, padx=20)
-    summary = db.get_numeric_summary("amount")
-    charts.draw_stats_table(table_card, summary, "Amount Summary Statistics")
+        hist_card = ctk.CTkFrame(row3, fg_color="#1a1a2e", corner_radius=15)
+        hist_card.pack(side="left", fill="both", expand=True, padx=(0, 8))
+        amount_data = db.get_numeric_distribution(num_col)
+        charts.draw_histogram(hist_card, amount_data, num_col,
+                              f"{num_col.replace('_',' ').title()} Distribution")
+
+        if col_types["categorical"]:
+            cat_col = col_types["categorical"][0]
+            bar_card = ctk.CTkFrame(row3, fg_color="#1a1a2e", corner_radius=15)
+            bar_card.pack(side="left", fill="both", expand=True, padx=(8, 0))
+            bar_data = db.get_top_categories(cat_col, num_col)
+            charts.draw_bar_chart(bar_card, bar_data, cat_col, "total",
+                                  f"Top {cat_col.replace('_',' ').title()} by {num_col.replace('_',' ').title()}")
+
+    # ── ROW 4: Donut charts for boolean columns ──
+    if col_types["boolean"]:
+        row4 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
+        row4.pack(fill="x", pady=10, padx=20)
+        df_full = db.get_dataframe()
+        for bool_col in col_types["boolean"][:2]:
+            donut_card = ctk.CTkFrame(
+                row4, fg_color="#1a1a2e", corner_radius=15)
+            donut_card.pack(side="left", fill="both", expand=True, padx=5)
+            charts.draw_donut_chart(donut_card, df_full, bool_col,
+                                    f"{bool_col.replace('_',' ').title()} Split")
+
+    # ── ROW 5: Stats table ──
+    if col_types["numeric"]:
+        table_card = ctk.CTkFrame(
+            dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
+        table_card.pack(fill="x", pady=10, padx=20)
+        num_col = col_types["numeric"][0]
+        summary = db.get_numeric_summary(num_col)
+        charts.draw_stats_table(table_card, summary,
+                                f"{num_col.replace('_',' ').title()} Summary")
 
 
 db.init_db()
