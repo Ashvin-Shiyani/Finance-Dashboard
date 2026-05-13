@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+COLORS = ["#C97064", "#BCA371", "#A6B07E", "#68A357", "#32965D",
+          "#064789", "#427AA1", "#A31F94", "#679436", "#A5BE00"]
+
 CARD_BG = "#1a1a2e"
 TEXT = "white"
 MUTED = "#888888"
