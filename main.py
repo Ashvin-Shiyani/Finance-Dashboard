@@ -119,7 +119,45 @@ def show_dashboard():
     card = ctk.CTkFrame(dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
     card.pack(pady=20, padx=20, fill="both", expand=True)
 
-    charts.draw_pie_chart(card, dept_data)
+    charts.draw_pie_chart(card, dept_data, "department",
+                          "count", "Transactions by Department")
+
+    bar_data = db.get_top_categories("department", "amount")
+
+    bar_card = ctk.CTkFrame(
+        dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
+    bar_card.pack(pady=20, padx=20, fill="both", expand=True)
+
+    charts.draw_bar_chart(bar_card, bar_data, "department",
+                          "total", "Top Departments by Amount")
+    # line chart
+    line_card = ctk.CTkFrame(
+        dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
+    line_card.pack(fill="x", pady=10, padx=20)
+    cashflow_data = db.get_monthly_cashflow()
+    charts.draw_line_chart(line_card, cashflow_data, "Cash Flow by Month")
+
+    # histogram + donut side by side
+    row3 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
+    row3.pack(fill="x", pady=10, padx=20)
+
+    hist_card = ctk.CTkFrame(row3, fg_color="#1a1a2e", corner_radius=15)
+    hist_card.pack(side="left", fill="both", expand=True, padx=(0, 8))
+    amount_data = db.get_numeric_distribution("amount")
+    charts.draw_histogram(hist_card, amount_data,
+                          "amount", "Amount Distribution")
+
+    donut_card = ctk.CTkFrame(row3, fg_color="#1a1a2e", corner_radius=15)
+    donut_card.pack(side="left", fill="both", expand=True, padx=(8, 0))
+    df = db.get_dataframe()
+    charts.draw_donut_chart(donut_card, df, "status", "Transaction Status")
+
+    # summary stats table
+    table_card = ctk.CTkFrame(
+        dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
+    table_card.pack(fill="x", pady=10, padx=20)
+    summary = db.get_numeric_summary("amount")
+    charts.draw_stats_table(table_card, summary, "Amount Summary Statistics")
 
 
 db.init_db()
