@@ -18,6 +18,16 @@ def load_csv_to_db(filepath):
     return df, len(df)
 
 
+def get_dataframe():
+    conn = sql.connect(db_name)
+    try:
+        df = pd.read_sql_query("SELECT * FROM data", conn)
+    except:
+        df = pd.DataFrame()
+    conn.close()
+    return df
+
+
 def get_department_counts():
     conn = sql.connect(db_name)
     result = pd.read_sql_query("""
