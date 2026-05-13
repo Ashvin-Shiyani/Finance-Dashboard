@@ -114,30 +114,27 @@ def show_dashboard():
     for widget in dashboard_frame.winfo_children():
         widget.destroy()
 
+    row1 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
+    row1.pack(fill="x", pady=10, padx=20)
+
+    card = ctk.CTkFrame(row1, fg_color="#1a1a2e", corner_radius=15)
+    card.pack(side="left", fill="both", expand=True, padx=(0, 8))
     dept_data = db.get_department_counts()
-
-    card = ctk.CTkFrame(dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
-    card.pack(pady=20, padx=20, fill="both", expand=True)
-
     charts.draw_pie_chart(card, dept_data, "department",
                           "count", "Transactions by Department")
 
+    bar_card = ctk.CTkFrame(row1, fg_color="#1a1a2e", corner_radius=15)
+    bar_card.pack(side="left", fill="both", expand=True, padx=(8, 0))
     bar_data = db.get_top_categories("department", "amount")
-
-    bar_card = ctk.CTkFrame(
-        dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
-    bar_card.pack(pady=20, padx=20, fill="both", expand=True)
-
     charts.draw_bar_chart(bar_card, bar_data, "department",
                           "total", "Top Departments by Amount")
-    # line chart
+
     line_card = ctk.CTkFrame(
         dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
     line_card.pack(fill="x", pady=10, padx=20)
     cashflow_data = db.get_monthly_cashflow()
     charts.draw_line_chart(line_card, cashflow_data, "Cash Flow by Month")
 
-    # histogram + donut side by side
     row3 = ctk.CTkFrame(dashboard_frame, fg_color="transparent")
     row3.pack(fill="x", pady=10, padx=20)
 
@@ -152,7 +149,6 @@ def show_dashboard():
     df = db.get_dataframe()
     charts.draw_donut_chart(donut_card, df, "status", "Transaction Status")
 
-    # summary stats table
     table_card = ctk.CTkFrame(
         dashboard_frame, fg_color="#1a1a2e", corner_radius=15)
     table_card.pack(fill="x", pady=10, padx=20)
