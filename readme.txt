@@ -23,3 +23,6 @@ is categorical. Based on the type, the app picks the best chart automatically.
 
 Built 6 charts using Matplotlib - pie, bar, line, histogram, donut and a stats table. Fixed axis labels 
 to show $10M instead of 1e7.
+
+I have developed the whole app hardcore attached to the Acadia csv file but my step will involve to update the 
+dashboard so it takes any type of csv
