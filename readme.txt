@@ -20,3 +20,6 @@ chart would be best suited for which info
 Wrote logic to detect column types automatically. Dates are detected by trying to convert them, numbers 
 by using pandas built in checker, yes/no columns by checking unique values, and categories by counting unique values using nunique() — if less than 20 it 
 is categorical. Based on the type, the app picks the best chart automatically.
+
+Built 6 charts using Matplotlib - pie, bar, line, histogram, donut and a stats table. Fixed axis labels 
+to show $10M instead of 1e7.
