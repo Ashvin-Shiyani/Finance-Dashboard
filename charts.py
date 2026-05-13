@@ -8,18 +8,14 @@ CARD_BG = "#1a1a2e"
 TEXT = "white"
 
 
-def draw_pie_chart(parent, df):
-    """
-    Takes a dataframe with department and count columns
-    Draws a pie chart showing each department's share
-    """
+def draw_pie_chart(parent, df, label_col, value_col, title):
     fig, ax = plt.subplots(figsize=(5, 4))
     fig.patch.set_facecolor(CARD_BG)
     ax.set_facecolor(CARD_BG)
 
     wedges, texts, autotexts = ax.pie(
-        df["count"],
-        labels=df["department"],
+        df[value_col],
+        labels=df[label_col],
         autopct="%1.1f%%",
         colors=COLORS[:len(df)],
         pctdistance=0.85,
@@ -33,8 +29,7 @@ def draw_pie_chart(parent, df):
         autotext.set_color(TEXT)
         autotext.set_fontsize(8)
 
-    ax.set_title("Transactions by Department",
-                 color=TEXT, fontsize=13, pad=15)
+    ax.set_title(title, color=TEXT, fontsize=13, pad=15)
 
     fig.tight_layout()
 
@@ -47,7 +42,6 @@ def draw_pie_chart(parent, df):
 def draw_bar_chart(parent, df, cat_col, num_col, title):
     fig, ax = plt.subplots(figsize=(5, 4))
     fig.patch.set_facecolor(CARD_BG)
-    ax.set_facecolor(CARD_BG)
 
     x_labels = df[cat_col].astype(str)
     y_values = df[num_col]
@@ -55,28 +49,33 @@ def draw_bar_chart(parent, df, cat_col, num_col, title):
     bars = ax.bar(range(len(x_labels)), y_values,
                   color=COLORS[:len(x_labels)], edgecolor="none")
 
+    # clean labels on top of bars — no numbers on the bars
     for bar, val in zip(bars, y_values):
+        if val >= 1_000_000:
+            label = f"${val/1_000_000:.1f}M"
+        elif val >= 1_000:
+            label = f"${val/1_000:.0f}K"
+        else:
+            label = f"${val:.0f}"
         ax.text(bar.get_x() + bar.get_width() / 2,
                 bar.get_height() + max(y_values) * 0.01,
-                f"${val:,.0f}",
-                ha="center", va="bottom", color=TEXT, fontsize=7)
+                label, ha="center", va="bottom", color=TEXT, fontsize=7)
 
     ax.set_xticks(range(len(x_labels)))
     ax.set_xticklabels(x_labels, rotation=45, ha="right", fontsize=8)
     ax.set_xlabel(cat_col.replace("_", " ").title(), color=TEXT)
     ax.set_ylabel("Amount ($)", color=TEXT)
-    ax.tick_params(colors=TEXT)
-    ax.title.set_color(TEXT)
-    for spine in ax.spines.values():
-        spine.set_color("#2a2a3a")
+
+    # fix Y axis — no more 1e7!
+    ax.yaxis.set_major_formatter(
+        plt.FuncFormatter(
+            lambda x, _: f"${x/1_000_000:.0f}M" if x >= 1_000_000 else f"${x/1_000:.0f}K")
+    )
 
     ax.set_title(title, color=TEXT, fontsize=13, pad=15)
+    apply_dark_style(ax)
     fig.tight_layout()
-
-    canvas = FigureCanvasTkAgg(fig, master=parent)
-    canvas.draw()
-    canvas.get_tk_widget().pack(fill="both", expand=True)
-    plt.close(fig)
+    return make_canvas(fig, parent)
 
 
 def apply_dark_style(ax):
@@ -121,6 +120,10 @@ def draw_line_chart(parent, df, title):
         ax.set_xticklabels(df["month"], rotation=45, ha="right", fontsize=8)
         ax.set_xlabel("Month", color=TEXT)
         ax.set_ylabel("Amount ($)", color=TEXT)
+        ax.yaxis.set_major_formatter(
+            plt.FuncFormatter(
+                lambda x, _: f"${x/1_000_000:.1f}M" if x >= 1_000_000 else f"${x/1_000:.0f}K")
+        )
         ax.legend(facecolor=CARD_BG, labelcolor=TEXT, fontsize=9)
 
     ax.set_title(title, color=TEXT, fontsize=13, pad=15)
